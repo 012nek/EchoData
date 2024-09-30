@@ -558,7 +558,7 @@
     DiscordUI.createModalWindow = createModalWindow;
     DiscordUI.generateModalContent = generateModalContent;
     DiscordUI.createRippleEffect = createRippleEffect;
-    DiscordUI.createCustomButton = createCustomButton
+    DiscordUI.createCustomButton = createCustomButton;
     DiscordUI.init = init;
     DiscordUI.CONFIG = CONFIG;
 
