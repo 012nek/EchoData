@@ -448,6 +448,24 @@
         element.style.animation = 'rainbow 10s linear infinite';
     };
 
+    // Extract guild ID from the URL
+    const extractGuildId = () => {
+        const pathSegments = window.location.pathname.split('/');
+        return pathSegments[2] || 'Unknown';
+    };
+
+    // Find the previous message with an avatar
+    const findPreviousMessageWithAvatar = (currentMessage) => {
+        let messageListItem = currentMessage.closest(CONFIG.MESSAGE_LIST_ITEM_SELECTOR);
+        while ((messageListItem = messageListItem?.previousElementSibling)) {
+            const message = messageListItem.querySelector(CONFIG.MESSAGE_SELECTOR);
+            if (message?.querySelector(CONFIG.AVATAR_SELECTOR)) {
+                return message;
+            }
+        }
+        return null;
+    };
+
     const createCustomButton = () => {
         const button = document.createElement('div');
         button.className = `button_f7e168 ${CONFIG.CUSTOM_BUTTON_CLASS}`;
@@ -509,6 +527,45 @@
         return button;
     };
 
+    const isDescendant = (parent, child) => parent.contains(child);
+
+    
+    // Extract user ID from message avatar
+    const extractUserIdFromMessage = (message) => {
+        const avatarImg = message.querySelector(CONFIG.AVATAR_SELECTOR);
+        if (avatarImg?.src) {
+            const match = avatarImg.src.match(/\/(?:avatars|users)\/(\d+)/);
+            return match ? match[1] : 'Unknown';
+        }
+        return 'Unknown';
+    };
+
+    const extractUserInfo = (message) => {
+        let usernameElement = message.querySelector(CONFIG.USERNAME_SELECTOR);
+        let username = usernameElement ? usernameElement.textContent.trim() : 'Unknown';
+
+        let userId = extractUserIdFromMessage(message);
+
+        if (userId === 'Unknown') {
+            const previousMessage = findPreviousMessageWithAvatar(message);
+            if (previousMessage) {
+                userId = extractUserIdFromMessage(previousMessage);
+                usernameElement = previousMessage.querySelector(CONFIG.USERNAME_SELECTOR);
+                username = usernameElement ? usernameElement.textContent.trim() : username;
+            }
+        }
+
+        const messageContentElement = message.querySelector(CONFIG.MESSAGE_CONTENT_SELECTOR);
+        const messageContent = messageContentElement ? messageContentElement.textContent.trim() : '';
+
+        const timestampElement = message.querySelector('time');
+        const timestamp = timestampElement ? timestampElement.getAttribute('datetime') : '';
+
+        const dataListItemId = message.getAttribute('data-list-item-id') || '';
+
+        return { username, userId, messageContent, timestamp, dataListItemId };
+    };
+
     // Add keyframes and custom styles
     const addStyles = () => {
         const styleSheet = document.createElement('style');
@@ -542,16 +599,40 @@
         document.head.appendChild(styleSheet);
     };
 
-    // Initialize the module
-    const init = () => {
-        addStyles();
+    const addCustomButton = (message) => {
+        if (!message.hasAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR)) {
+            const buttonsContainer = message.querySelector(CONFIG.BUTTON_CONTAINER_SELECTOR);
+            if (buttonsContainer) {
+                const customButton = createCustomButton();
+                buttonsContainer.appendChild(customButton);
+                message.setAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR, 'true');
+            }
+        }
     };
 
-    // Start the script
-    if (document.readyState !== 'loading') {
-        init();
-    } else {
-        document.addEventListener('DOMContentLoaded', init);
+    const removeCustomButton = (message) => {
+        if (message.hasAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR)) {
+            const customButton = message.querySelector(`.${CONFIG.CUSTOM_BUTTON_CLASS}`);
+            customButton?.remove();
+            message.removeAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR);
+        }
+    };
+
+    const handleMouseEvent = (event) => {
+        const message = event.target.closest(CONFIG.MESSAGE_SELECTOR);
+        if (message) {
+            if (event.type === 'mouseenter') {
+                addCustomButton(message);
+            } else if (event.type === 'mouseleave' && !isDescendant(message, event.relatedTarget)) {
+                removeCustomButton(message);
+            }
+        }
+    };
+
+    const initializeEventDelegation = () => {
+        const container = document.querySelector('[data-list-id="chat-messages"]') || document.body;
+        container.addEventListener('mouseenter', handleMouseEvent, true);
+        container.addEventListener('mouseleave', handleMouseEvent, true);
     };
 
     // Expose the module
@@ -559,6 +640,7 @@
     DiscordUI.generateModalContent = generateModalContent;
     DiscordUI.createRippleEffect = createRippleEffect;
     DiscordUI.createCustomButton = createCustomButton;
+    DiscordUI.initializeEventDelegation = initializeEventDelegation;
     DiscordUI.init = init;
     DiscordUI.CONFIG = CONFIG;
 
