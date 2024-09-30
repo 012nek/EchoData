@@ -448,6 +448,67 @@
         element.style.animation = 'rainbow 10s linear infinite';
     };
 
+    const createCustomButton = () => {
+        const button = document.createElement('div');
+        button.className = `button_f7e168 ${CONFIG.CUSTOM_BUTTON_CLASS}`;
+        button.setAttribute('role', 'button');
+        button.setAttribute('tabindex', '0');
+        button.setAttribute('aria-label', 'Show User Info');
+        button.innerHTML = CONFIG.SVG_ICON;
+        Object.assign(button.style, {
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '24px',
+            height: '24px',
+            cursor: 'pointer',
+            marginLeft: '4px',
+            color: 'var(--interactive-normal)',
+            position: 'relative',
+            overflow: 'hidden',
+        });
+
+        // Hover and Click Effects
+        button.addEventListener('mouseover', () => {
+            button.style.color = 'var(--interactive-hover)';
+        });
+        button.addEventListener('mouseout', () => {
+            button.style.color = 'var(--interactive-normal)';
+        });
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            createRippleEffect(event, button);
+
+            const message = event.target.closest(CONFIG.MESSAGE_SELECTOR);
+            if (message) {
+                const userInfo = extractUserInfo(message);
+                const guildId = extractGuildId();
+
+                console.log('--- User Information ---');
+                console.log(`Username: ${userInfo.username}`);
+                console.log(`User ID: ${userInfo.userId}`);
+                console.log(`Message Content: ${userInfo.messageContent}`);
+                console.log(`Timestamp: ${userInfo.timestamp}`);
+                console.log(`Data List Item ID: ${userInfo.dataListItemId}`);
+                console.log(`Guild ID: ${guildId}`);
+                console.log('-------------------------');
+
+                const modalContent = generateModalContent(userInfo);
+                createModalWindow(modalContent, button);
+            }
+        });
+
+        // Keyboard Accessibility
+        button.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                button.click();
+            }
+        });
+
+        return button;
+    };
+
     // Add keyframes and custom styles
     const addStyles = () => {
         const styleSheet = document.createElement('style');
@@ -497,6 +558,8 @@
     DiscordUI.createModalWindow = createModalWindow;
     DiscordUI.generateModalContent = generateModalContent;
     DiscordUI.createRippleEffect = createRippleEffect;
+    DiscordUI.createCustomButton = createCustomButton
+    DiscordUI.init = init;
     DiscordUI.CONFIG = CONFIG;
 
     // Expose the module to the global scope for importing
