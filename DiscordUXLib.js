@@ -7,8 +7,30 @@
 
     // Configuration Constants
     const CONFIG = {
+        MESSAGE_SELECTOR: '.message_d5deea',
+        MESSAGE_LIST_ITEM_SELECTOR: '.messageListItem_d5deea',
+        BUTTON_CONTAINER_SELECTOR: '.buttonsInner_d5deea',
+        CUSTOM_BUTTON_CLASS: 'custom-hover-button',
+        BUTTON_PROCESSED_DATA_ATTR: 'data-hover-button-added',
+        USERNAME_SELECTOR: '.username_f9f2ca',
+        AVATAR_SELECTOR: 'img.avatar_f9f2ca',
+        MESSAGE_CONTENT_SELECTOR: '.messageContent_f9f2ca',
         TEXT_COLOR: 'var(--text-normal)', // Default text color
         HYPERLINK_COLOR: '#00AFF4',       // Color for hyperlinks
+        SVG_ICON: `
+            <!-- Question Mark Icon matching Discord's style -->
+            <svg viewBox="0 0 24 24" width="24" height="24" class="icon_e986d9" aria-hidden="true">
+                <path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10
+                10 10-4.47 10-10S17.53 2 12 2zm1
+                17h-2v-2h2v2zm1.07-7.75l-.9.92C11.45 12.9 11
+                13.5 11 15h-2v-.5c0-1.1.45-2.1
+                1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41
+                0-1.1-.9-2-2-2s-2 .9-2
+                2H7c0-2.21 1.79-4 4-4s4
+                1.79 4 4c0 .88-.36 1.67-.93
+                2.25z"/>
+            </svg>
+        `,
     };
 
     /** Utility Functions **/
@@ -469,7 +491,7 @@
         init();
     } else {
         document.addEventListener('DOMContentLoaded', init);
-    }
+    };
 
     // Expose the module
     DiscordUI.createModalWindow = createModalWindow;
