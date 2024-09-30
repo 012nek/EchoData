@@ -1,4 +1,6 @@
-// discord-ui.js
+// DiscordUI.js
+
+// Custom Module for Generating Discord-Themed UI Windows
 
 (function () {
   // Exported Module Object
@@ -8,17 +10,17 @@
   const CONFIG = {
     MESSAGE_SELECTOR: '.message-2CShn3',
     MESSAGE_LIST_ITEM_SELECTOR: '.messageListItem-ZZ7v6g',
-    BUTTON_CONTAINER_SELECTOR: '.buttonContainer-28fw2U',
+    BUTTON_CONTAINER_SELECTOR: '.container-3cGP6G',
     CUSTOM_BUTTON_CLASS: 'custom-hover-button',
     BUTTON_PROCESSED_DATA_ATTR: 'data-hover-button-added',
-    USERNAME_SELECTOR: '.username-1A8OIy',
+    USERNAME_SELECTOR: '.headerText-3Uvj1Y .username-1A8OIy',
     AVATAR_SELECTOR: 'img.avatar-1BDn8e',
     MESSAGE_CONTENT_SELECTOR: '.markup-2BOw-j',
     TEXT_COLOR: 'var(--text-normal)', // Default text color
     HYPERLINK_COLOR: '#00AFF4', // Color for hyperlinks
     SVG_ICON: `
       <!-- Question Mark Icon matching Discord's style -->
-      <svg viewBox="0 0 24 24" width="24" height="24" class="icon-3Gkjwa" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="24" height="24" class="icon-2xnN2Y" aria-hidden="true">
         <path fill="currentColor" d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10
         10 10-4.47 10-10S17.53 2 12 2zm1
         17h-2v-2h2v2zm1.07-7.75l-.9.92C11.45 12.9 11
@@ -89,7 +91,7 @@
   // Create a custom button element
   const createCustomButton = () => {
     const button = document.createElement('div');
-    button.className = `button-38aScr ${CONFIG.CUSTOM_BUTTON_CLASS}`;
+    button.className = `${CONFIG.CUSTOM_BUTTON_CLASS} button-1ZiXG9`;
     button.setAttribute('role', 'button');
     button.setAttribute('tabindex', '0');
     button.setAttribute('aria-label', 'Show User Info');
@@ -253,7 +255,13 @@
 
     modal.appendChild(exitButton);
 
-    document.body.appendChild(modal);
+    // Insert modal into Discord's UI container
+    const discordApp = document.querySelector('.appMount-3lHmkl');
+    if (discordApp) {
+      discordApp.appendChild(modal);
+    } else {
+      document.body.appendChild(modal);
+    }
 
     // Position the modal near the button
     positionModal(modal, button);
@@ -274,9 +282,9 @@
     let left = buttonRect.left + window.scrollX - modalRect.width / 2 + buttonRect.width / 2;
 
     // Adjust if modal goes off screen
-    if (left < 0) left = 10;
+    if (left < 10) left = 10;
     if (left + modalRect.width > window.innerWidth) left = window.innerWidth - modalRect.width - 10;
-    if (top < 0) top = buttonRect.bottom + window.scrollY + 10;
+    if (top < 10) top = buttonRect.bottom + window.scrollY + 10;
 
     modal.style.top = `${top}px`;
     modal.style.left = `${left}px`;
@@ -504,7 +512,9 @@
   const removeCustomButton = (message) => {
     if (message.hasAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR)) {
       const customButton = message.querySelector(`.${CONFIG.CUSTOM_BUTTON_CLASS}`);
-      customButton?.remove();
+      if (customButton) {
+        customButton.remove();
+      }
       message.removeAttribute(CONFIG.BUTTON_PROCESSED_DATA_ATTR);
     }
   };
@@ -521,56 +531,62 @@
     }
   };
 
-  // Initialize event delegation
+  // Initialize event delegation and MutationObserver
   const initializeEventDelegation = () => {
     const container = document.querySelector('[data-list-id="chat-messages"]') || document.body;
     container.addEventListener('mouseenter', handleMouseEvent, true);
     container.addEventListener('mouseleave', handleMouseEvent, true);
   };
 
-  // Initialize the module
-  const init = () => {
-    initializeEventDelegation();
+  // Add keyframes and custom styles
+  const addStyles = () => {
+    const styleSheet = document.createElement('style');
+    styleSheet.type = 'text/css';
+    styleSheet.innerText = `
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+      @keyframes rainbow {
+        0% { background-position: 0% }
+        100% { background-position: 200% }
+      }
+      /* Custom scrollbar styling */
+      .custom-modal ::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-modal ::-webkit-scrollbar-track {
+        background: var(--background-tertiary);
+      }
+      .custom-modal ::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-auto-thumb);
+        border-radius: 4px;
+      }
+      .custom-modal ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--scrollbar-auto-thumb);
+      }
+      /* Ensure custom button is visible */
+      .${CONFIG.CUSTOM_BUTTON_CLASS} {
+        background-color: var(--background-tertiary);
+        border-radius: 4px;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .${CONFIG.CUSTOM_BUTTON_CLASS}:hover {
+        background-color: var(--background-modifier-hover);
+        color: var(--interactive-hover);
+      }
+    `;
+    document.head.appendChild(styleSheet);
   };
 
-  // Start the script
-  if (document.readyState !== 'loading') {
-    init();
-  } else {
-    document.addEventListener('DOMContentLoaded', init);
-  }
+  // Initialize the module
+  DiscordUI.init = () => {
+    initializeEventDelegation();
+    addStyles();
+  };
 
-  // Add keyframes and custom styles
-  const styleSheet = document.createElement('style');
-  styleSheet.type = 'text/css';
-  styleSheet.innerText = `
-    @keyframes ripple {
-      to {
-        transform: scale(4);
-        opacity: 0;
-      }
-    }
-    @keyframes rainbow {
-      0% { background-position: 0% }
-      100% { background-position: 200% }
-    }
-    /* Custom scrollbar styling */
-    .custom-modal ::-webkit-scrollbar {
-      width: 8px;
-    }
-    .custom-modal ::-webkit-scrollbar-track {
-      background: var(--background-tertiary);
-    }
-    .custom-modal ::-webkit-scrollbar-thumb {
-      background-color: var(--scrollbar-auto-thumb);
-      border-radius: 4px;
-    }
-    .custom-modal ::-webkit-scrollbar-thumb:hover {
-      background-color: var(--scrollbar-auto-thumb);
-    }
-  `;
-  document.head.appendChild(styleSheet);
-
-  // Expose the module to the global scope for importing
+  // Expose the module to the global scope
   window.DiscordUI = DiscordUI;
 })();
